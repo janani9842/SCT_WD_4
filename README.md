@@ -1,1 +1,1 @@
-# SCT_WD_4
+This is a **To-Do Web App** built with **HTML**, **CSS**, **JavaScript**, and **Node.js**. Users can add and delete tasks, which are stored temporarily in memory. To run it, install dependencies (`npm install express body-parser`), start the server (`node server.js`), and open `http://localhost:3000`. Future improvements could include a database or better design. Let me know if you need help!.
