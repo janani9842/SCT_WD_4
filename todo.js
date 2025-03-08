@@ -1,43 +1,69 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const app = express();
-const port = 3000;
+const taskInput = document.getElementById('task-input');
+const addTaskButton = document.getElementById('add-task');
+const taskList = document.getElementById('task-list');
+const prioritySelect = document.getElementById('priority');
+const themeToggle = document.getElementById('theme-toggle');
+const taskProgress = document.getElementById('task-progress');
 
-// Middleware to parse JSON
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// In-memory storage for tasks
 let tasks = [];
 
-// Get all tasks
-app.get('/tasks', (req, res) => {
-  res.json(tasks);
-});
+// Load tasks from localStorage
+if (localStorage.getItem('tasks')) {
+  tasks = JSON.parse(localStorage.getItem('tasks'));
+  renderTasks();
+}
 
-// Add a new task
-app.post('/tasks', (req, res) => {
-  const task = req.body.task;
-  if (task) {
-    tasks.push(task);
-    res.status(201).send('Task added');
-  } else {
-    res.status(400).send('Task is required');
+// Add task
+addTaskButton.addEventListener('click', () => {
+  const taskText = taskInput.value.trim();
+  const priority = prioritySelect.value;
+  if (taskText) {
+    tasks.push({ text: taskText, priority, completed: false });
+    taskInput.value = '';
+    saveTasks();
+    renderTasks();
   }
 });
 
-// Delete a task
-app.delete('/tasks/:id', (req, res) => {
-  const taskId = req.params.id;
-  if (taskId >= 0 && taskId < tasks.length) {
+// Render tasks
+function renderTasks() {
+  taskList.innerHTML = '';
+  tasks.forEach((task, index) => {
+    const li = document.createElement('li');
+    li.className = 'task-item';
+    li.innerHTML = `
+      <span>${task.text} (${task.priority})</span>
+      <button class="delete-btn" data-id="${index}">Delete</button>
+    `;
+    taskList.appendChild(li);
+  });
+  updateProgress();
+}
+
+// Delete task
+taskList.addEventListener('click', (e) => {
+  if (e.target.classList.contains('delete-btn')) {
+    const taskId = e.target.getAttribute('data-id');
     tasks.splice(taskId, 1);
-    res.status(200).send('Task deleted');
-  } else {
-    res.status(404).send('Task not found');
+    saveTasks();
+    renderTasks();
   }
 });
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+// Save tasks to localStorage
+function saveTasks() {
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+// Update progress bar
+function updateProgress() {
+  const completedTasks = tasks.filter(task => task.completed).length;
+  const progress = (completedTasks / tasks.length) * 100 || 0;
+  taskProgress.value = progress;
+}
+
+// Dark mode toggle
+themeToggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark-mode');
+  themeToggle.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
 });
